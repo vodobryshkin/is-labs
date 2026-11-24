@@ -1,0 +1,64 @@
+[
+  {
+    "name": "Imported Director",
+    "coordinates": {
+      "x": 1,
+      "y": 1
+    },
+    "salary": 100,
+    "rating": 1,
+    "start_date": "2026-10-01T09:00:00Z",
+    "position": "DIRECTOR",
+    "status": "HIRED",
+    "organization": {
+      "full_name": "ООО «Импорт»",
+      "annual_turnover": 1000,
+      "employees_count": 10,
+      "rating": 1,
+      "type": "PRIVATE_LIMITED_COMPANY",
+      "official_address": {
+        "street": "Official",
+        "town": {
+          "x": 1,
+          "y": 2,
+          "z": 3
+        }
+      },
+      "postal_address": {
+        "street": "Postal",
+        "town": {
+          "x": 4,
+          "y": 5,
+          "z": 6
+        }
+      }
+    },
+    "person": {
+      "eye_color": null,
+      "hair_color": "BROWN",
+      "location": {
+        "x": 7,
+        "y": 8,
+        "z": 9
+      },
+      "birthday": "2000-01-01T00:00:00Z",
+      "weight": 70,
+      "nationality": "RUSSIA"
+    }
+  },
+  {
+    "name": "Imported Without Organization",
+    "coordinates": {
+      "x": 1,
+      "y": 1,
+      "id": 999
+    },
+    "salary": 100,
+    "rating": 1,
+    "start_date": "2026-10-01T09:00:00Z",
+    "position": "DIRECTOR",
+    "status": "HIRED",
+    "organization": null,
+    "person": null
+  }
+]
