@@ -12,7 +12,6 @@ import java.util.function.Function;
 
 /**
  * Читает значение JSON только нужного типа, без округления и неявных преобразований.
- * Без него JSON-B превратил бы число в строку, а 1.5 -- в целое 1.
  */
 public class StrictDeserializer<T> implements JsonbDeserializer<T> {
     private final JsonValue.ValueType expected;
