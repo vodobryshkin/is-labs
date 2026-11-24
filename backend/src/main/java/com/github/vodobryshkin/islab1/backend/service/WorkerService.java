@@ -21,11 +21,12 @@ import java.util.Optional;
 
 /**
  * Операции с работниками.
- * Все ссылки и конфликты проверяются до первой записи, поэтому при отказе не остаётся частично
- * созданных объектов.
+ * Бизнес-отказы прерывают транзакцию исключением, в том числе при вызове из составной операции.
  */
 @ApplicationScoped
 public class WorkerService {
+    private static final String WORKER = "worker";
+
     private final WorkerRepository repository;
     private final UserRepository userRepository;
     private final CoordinatesRepository coordinatesRepository;
@@ -72,14 +73,15 @@ public class WorkerService {
      *
      * @param worker работник, у ссылок на координаты, персону и организацию задан только ID
      * @param username логин вошедшего пользователя
-     * @return DONE, REFERENCE_NOT_FOUND, CONFLICT
+     * @return DONE с ID созданного работника
+     * @throws WorkerOperationException при отсутствии ссылки или конфликте
      */
     @Transactional
     public Change create(Worker worker, String username) {
         Optional<Change> refusal = refusal(worker, null);
 
         if (refusal.isPresent()) {
-            return refusal.get();
+            throw new WorkerOperationException(refusal.get());
         }
 
         worker.setUser(userRepository.findByUsername(username).orElseThrow());
@@ -100,20 +102,22 @@ public class WorkerService {
      *
      * @param id ID работника
      * @param values новые значения, организация -- только ссылка или null
-     * @return DONE, NOT_FOUND, REFERENCE_NOT_FOUND, CONFLICT
+     * @return DONE с ID обновлённого работника
+     * @throws WorkerOperationException при отсутствии работника, ссылки или конфликте
      */
     @Transactional
     public Change update(int id, Worker values) {
         Optional<Worker> found = repository.findById(id);
 
         if (found.isEmpty()) {
-            return new Change(Outcome.NOT_FOUND, null, null, null);
+            throw new WorkerOperationException(
+                    new Change(Outcome.NOT_FOUND, null, WORKER, (long) id));
         }
 
         Optional<Change> refusal = refusal(values, id);
 
         if (refusal.isPresent()) {
-            return refusal.get();
+            throw new WorkerOperationException(refusal.get());
         }
 
         Worker target = found.get();
@@ -143,18 +147,21 @@ public class WorkerService {
      * Удаляет работника, если с ним не связана персона.
      *
      * @param id ID работника
-     * @return DONE, NOT_FOUND, IN_USE
+     * @return DONE
+     * @throws WorkerOperationException при отсутствии работника или связанной персоне
      */
     @Transactional
     public Outcome delete(int id) {
         Optional<Worker> worker = repository.findById(id);
 
         if (worker.isEmpty()) {
-            return Outcome.NOT_FOUND;
+            throw new WorkerOperationException(
+                    new Change(Outcome.NOT_FOUND, null, WORKER, (long) id));
         }
 
         if (repository.isReferencedByPerson(id)) {
-            return Outcome.IN_USE;
+            throw new WorkerOperationException(
+                    new Change(Outcome.IN_USE, null, WORKER, (long) id));
         }
 
         repository.delete(worker.get());
@@ -168,20 +175,22 @@ public class WorkerService {
      *
      * @param workerId ID работника
      * @param organizationId ID существующей организации
-     * @return DONE, NOT_FOUND, REFERENCE_NOT_FOUND
+     * @return DONE
+     * @throws WorkerOperationException при отсутствии работника или организации
      */
     @Transactional
     public Outcome hire(int workerId, long organizationId) {
         Optional<Worker> worker = repository.findById(workerId);
 
         if (worker.isEmpty()) {
-            return Outcome.NOT_FOUND;
+            throw new WorkerOperationException(
+                    new Change(Outcome.NOT_FOUND, null, WORKER, (long) workerId));
         }
 
         Organization organization = organizationService.find(organizationId).orElse(null);
 
         if (organization == null) {
-            return Outcome.REFERENCE_NOT_FOUND;
+            throw new WorkerOperationException(missing("organization", organizationId));
         }
 
         Worker target = worker.get();
@@ -354,7 +363,11 @@ public class WorkerService {
                     : organizationService.find(organization.getId()).orElseThrow();
         }
 
-        organizationService.create(organization);
+        Change change = organizationService.create(organization);
+
+        if (change.getOutcome() != Outcome.DONE) {
+            throw new WorkerOperationException(change);
+        }
 
         return organization;
     }

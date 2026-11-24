@@ -1,0 +1,179 @@
+# Каждый сценарий запускается на отдельной очищенной тестовой БД.
+
+GET {{base_url}}/auth/csrf
+HTTP 200
+[Captures]
+csrf: jsonpath "$.csrf_token"
+POST {{base_url}}/auth/register
+X-CSRF-Token: {{csrf}}
+{
+    "username": "rollback_late_user",
+    "password": "secret_1"
+}
+HTTP 201
+
+POST {{base_url}}/auth/login
+X-CSRF-Token: {{csrf}}
+{
+    "username": "rollback_late_user",
+    "password": "secret_1"
+}
+HTTP 200
+
+GET {{base_url}}/auth/csrf
+HTTP 200
+[Captures]
+csrf: jsonpath "$.csrf_token"
+# Запускать только через check_rollback_after_write.sh: он создаёт временный CHECK.
+# Все поля допустимы по API. Ошибка БД возникает при INSERT персоны после записи графа.
+POST {{base_url}}/workers
+X-CSRF-Token: {{csrf}}
+{
+    "name": "Rollback Worker",
+    "coordinates": {
+        "x": 1,
+        "y": 1
+    },
+    "salary": 100,
+    "rating": 1,
+    "start_date": "2026-10-01T09:00:00Z",
+    "position": null,
+    "status": null,
+    "person": {
+        "eye_color": null,
+        "hair_color": "BLUE",
+        "location": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+        },
+        "birthday": "2000-01-01T00:00:00Z",
+        "weight": 123.25,
+        "nationality": "SPAIN"
+    },
+    "organization": {
+        "full_name": "Late Failure Co",
+        "annual_turnover": 10,
+        "employees_count": 1,
+        "rating": 1,
+        "type": null,
+        "official_address": {
+            "street": "Official",
+            "town": {
+                "x": 3,
+                "y": 3,
+                "z": 3
+            }
+        },
+        "postal_address": {
+            "street": "Postal",
+            "town": {
+                "x": 2,
+                "y": 2,
+                "z": 2
+            }
+        }
+    }
+}
+HTTP 500
+
+GET {{base_url}}/workers
+HTTP 200
+[Asserts]
+jsonpath "$.total_items" == 0
+GET {{base_url}}/coordinates
+HTTP 200
+[Asserts]
+jsonpath "$.total_items" == 0
+GET {{base_url}}/persons
+HTTP 200
+[Asserts]
+jsonpath "$.total_items" == 0
+GET {{base_url}}/locations
+HTTP 200
+[Asserts]
+jsonpath "$.total_items" == 0
+GET {{base_url}}/addresses
+HTTP 200
+[Asserts]
+jsonpath "$.total_items" == 0
+GET {{base_url}}/organizations
+HTTP 200
+[Asserts]
+jsonpath "$.total_items" == 0
+# После отката сервер способен успешно выполнить аналогичное создание.
+POST {{base_url}}/workers
+X-CSRF-Token: {{csrf}}
+{
+    "name": "Rollback Worker",
+    "coordinates": {
+        "x": 1,
+        "y": 1
+    },
+    "salary": 100,
+    "rating": 1,
+    "start_date": "2026-10-01T09:00:00Z",
+    "position": null,
+    "status": null,
+    "person": {
+        "eye_color": null,
+        "hair_color": "BLUE",
+        "location": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+        },
+        "birthday": "2000-01-01T00:00:00Z",
+        "weight": 70,
+        "nationality": "SPAIN"
+    },
+    "organization": {
+        "full_name": "Late Failure Co",
+        "annual_turnover": 10,
+        "employees_count": 1,
+        "rating": 1,
+        "type": null,
+        "official_address": {
+            "street": "Official",
+            "town": {
+                "x": 3,
+                "y": 3,
+                "z": 3
+            }
+        },
+        "postal_address": {
+            "street": "Postal",
+            "town": {
+                "x": 2,
+                "y": 2,
+                "z": 2
+            }
+        }
+    }
+}
+HTTP 201
+
+GET {{base_url}}/workers
+HTTP 200
+[Asserts]
+jsonpath "$.total_items" == 1
+GET {{base_url}}/coordinates
+HTTP 200
+[Asserts]
+jsonpath "$.total_items" == 1
+GET {{base_url}}/persons
+HTTP 200
+[Asserts]
+jsonpath "$.total_items" == 1
+GET {{base_url}}/locations
+HTTP 200
+[Asserts]
+jsonpath "$.total_items" == 3
+GET {{base_url}}/addresses
+HTTP 200
+[Asserts]
+jsonpath "$.total_items" == 2
+GET {{base_url}}/organizations
+HTTP 200
+[Asserts]
+jsonpath "$.total_items" == 1

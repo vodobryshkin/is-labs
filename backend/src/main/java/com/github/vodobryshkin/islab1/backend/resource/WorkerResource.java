@@ -3,11 +3,11 @@ package com.github.vodobryshkin.islab1.backend.resource;
 import com.github.vodobryshkin.islab1.backend.domain.Status;
 import com.github.vodobryshkin.islab1.backend.domain.Worker;
 import com.github.vodobryshkin.islab1.backend.dto.common.CountResponse;
-import com.github.vodobryshkin.islab1.backend.dto.worker.CreateWorkerResponse;
 import com.github.vodobryshkin.islab1.backend.dto.common.ErrorResponse;
-import com.github.vodobryshkin.islab1.backend.dto.organization.HireRequest;
 import com.github.vodobryshkin.islab1.backend.dto.common.ListQuery;
 import com.github.vodobryshkin.islab1.backend.dto.common.PageResponse;
+import com.github.vodobryshkin.islab1.backend.dto.organization.HireRequest;
+import com.github.vodobryshkin.islab1.backend.dto.worker.CreateWorkerResponse;
 import com.github.vodobryshkin.islab1.backend.dto.worker.WorkerRequest;
 import com.github.vodobryshkin.islab1.backend.dto.worker.WorkerResponse;
 import com.github.vodobryshkin.islab1.backend.service.Change;
@@ -78,17 +78,13 @@ public class WorkerResource {
         Worker worker = requestReader.read(body, WorkerRequest.class).toEntity();
         Change change = service.create(worker, request.getUserPrincipal().getName());
 
-        return switch (change.getOutcome()) {
-            case DONE -> Response.created(uriInfo.getAbsolutePathBuilder()
-                            .path(change.getId().toString()).build())
-                    .entity(new CreateWorkerResponse(change.getId().intValue(),
-                            worker.getOrganization() == null
-                                    ? null
-                                    : worker.getOrganization().getId()))
-                    .build();
-            case CONFLICT -> conflict(change);
-            default -> referenceNotFound(change.getSubject(), change.getSubjectId());
-        };
+        return Response.created(uriInfo.getAbsolutePathBuilder()
+                        .path(change.getId().toString()).build())
+                .entity(new CreateWorkerResponse(change.getId().intValue(),
+                        worker.getOrganization() == null
+                                ? null
+                                : worker.getOrganization().getId()))
+                .build();
     }
 
     /**
@@ -204,16 +200,9 @@ public class WorkerResource {
         int id = requestReader.workerId(rawId);
         WorkerRequest request = requestReader.read(body, WorkerRequest.class);
         request.setOrganization(null);
-        Change change = service.update(id, request.toEntity());
+        service.update(id, request.toEntity());
 
-        return switch (change.getOutcome()) {
-            case DONE -> Response.noContent().build();
-            case NOT_FOUND -> Response.status(Response.Status.NOT_FOUND)
-                    .entity(new ErrorResponse(NOT_FOUND.formatted(id)))
-                    .build();
-            case CONFLICT -> conflict(change);
-            default -> referenceNotFound(change.getSubject(), change.getSubjectId());
-        };
+        return Response.noContent().build();
     }
 
     /**
@@ -231,13 +220,9 @@ public class WorkerResource {
         long organizationId =
                 requestReader.read(body, HireRequest.class).getOrganizationId();
 
-        return switch (service.hire(id, organizationId)) {
-            case DONE -> Response.noContent().build();
-            case NOT_FOUND -> Response.status(Response.Status.NOT_FOUND)
-                    .entity(new ErrorResponse(NOT_FOUND.formatted(id)))
-                    .build();
-            default -> referenceNotFound("organization", organizationId);
-        };
+        service.hire(id, organizationId);
+
+        return Response.noContent().build();
     }
 
     /**
@@ -251,16 +236,9 @@ public class WorkerResource {
     public Response delete(@PathParam("id") String rawId) {
         int id = requestReader.workerId(rawId);
 
-        return switch (service.delete(id)) {
-            case DONE -> Response.noContent().build();
-            case IN_USE -> Response.status(Response.Status.CONFLICT)
-                    .entity(new ErrorResponse("Worker with id=" + id
-                            + " is referenced by a person and cannot be deleted."))
-                    .build();
-            default -> Response.status(Response.Status.NOT_FOUND)
-                    .entity(new ErrorResponse(NOT_FOUND.formatted(id)))
-                    .build();
-        };
+        service.delete(id);
+
+        return Response.noContent().build();
     }
 
     private Status statusParameter(UriInfo uriInfo, boolean nullable) {
@@ -281,30 +259,5 @@ public class WorkerResource {
         }
 
         throw requestReader.badRequest("Parameter status has an unsupported value.");
-    }
-
-    private Response conflict(Change change) {
-        String message = "person".equals(change.getSubject())
-                ? "Person with id=" + change.getSubjectId()
-                        + " is already assigned to another worker."
-                : "Another organization with this full_name already exists.";
-
-        return Response.status(Response.Status.CONFLICT)
-                .entity(new ErrorResponse(message))
-                .build();
-    }
-
-    private Response referenceNotFound(String subject, long id) {
-        String message = switch (subject) {
-            case "address" -> "Address with id=%d does not exist.";
-            case "coordinates" -> "Coordinates with id=%d do not exist.";
-            case "organization" -> "Organization with id=%d does not exist.";
-            case "person" -> "Person with id=%d does not exist.";
-            default -> "Location with id=%d does not exist.";
-        };
-
-        return Response.status(Response.Status.NOT_FOUND)
-                .entity(new ErrorResponse(message.formatted(id)))
-                .build();
     }
 }
