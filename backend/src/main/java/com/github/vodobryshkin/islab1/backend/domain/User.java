@@ -52,4 +52,14 @@ public class User {
 
     @OneToMany(mappedBy = "user")
     private List<Worker> workers;
+
+    @Column(name = "admin", nullable = false)
+    private boolean admin;
+
+    /**
+     * Создаёт обычного пользователя. Регистрация не принимает признак администратора.
+     */
+    public User(Long id, String username, String passwordHash, List<Worker> workers) {
+        this(id, username, passwordHash, workers, false);
+    }
 }

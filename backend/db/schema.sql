@@ -2,6 +2,7 @@ CREATE TABLE IF NOT EXISTS users (
     user_id BIGSERIAL PRIMARY KEY,
     username VARCHAR(64) UNIQUE NOT NULL CHECK (username ~ '^[a-zA-Z0-9_]{3,64}$'),
     password_hash VARCHAR(255) NOT NULL,
+    admin BOOLEAN NOT NULL DEFAULT FALSE,
     creation_date TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
@@ -58,4 +59,15 @@ CREATE TABLE IF NOT EXISTS persons (
     weight REAL NOT NULL CHECK (weight > 0 AND weight < 'Infinity'::REAL),
     location_id BIGINT REFERENCES locations NOT NULL,
     nationality VARCHAR(255) NOT NULL CHECK (nationality IN ('RUSSIA', 'UNITED_KINGDOM', 'SPAIN', 'ITALY'))
+);
+
+CREATE TABLE IF NOT EXISTS import_operations (
+    id BIGSERIAL PRIMARY KEY,
+    user_id BIGINT NOT NULL REFERENCES users(user_id),
+    status VARCHAR(16) NOT NULL CHECK (status IN ('IN_PROGRESS', 'SUCCESS', 'FAILED')),
+    added_count INTEGER,
+    CONSTRAINT import_operations_result CHECK (
+        (status = 'SUCCESS' AND added_count IS NOT NULL AND added_count >= 0)
+        OR (status IN ('IN_PROGRESS', 'FAILED') AND added_count IS NULL)
+    )
 );

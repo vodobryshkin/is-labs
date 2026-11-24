@@ -1,0 +1,22 @@
+GET {{base_url}}/auth/csrf
+HTTP 200
+[Captures]
+csrf: jsonpath "$.csrf_token"
+POST {{base_url}}/auth/login
+X-CSRF-Token: {{csrf}}
+{
+    "username": "stage02_admin",
+    "password": "secret_1"
+}
+HTTP 200
+
+GET {{base_url}}/auth/csrf
+HTTP 200
+[Captures]
+csrf: jsonpath "$.csrf_token"
+GET {{base_url}}/imports
+HTTP 200
+[Asserts]
+jsonpath "$.total_items" == 1
+jsonpath "$.items" count == 1
+jsonpath "$.items[0].username" == "stage02_admin"

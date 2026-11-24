@@ -13,6 +13,7 @@
         <class>com.github.vodobryshkin.islab1.backend.domain.Organization</class>
         <class>com.github.vodobryshkin.islab1.backend.domain.Person</class>
         <class>com.github.vodobryshkin.islab1.backend.domain.User</class>
+        <class>com.github.vodobryshkin.islab1.backend.domain.ImportOperation</class>
         <class>com.github.vodobryshkin.islab1.backend.domain.Worker</class>
         <class>com.github.vodobryshkin.islab1.backend.domain.ZonedDateTimeConverter</class>
         <exclude-unlisted-classes>true</exclude-unlisted-classes>

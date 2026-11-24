@@ -7,5 +7,5 @@ BEGIN
 END
 $$;
 
-TRUNCATE TABLE persons, workers, organizations, addresses, locations, coordinates, users
+TRUNCATE TABLE import_operations, persons, workers, organizations, addresses, locations, coordinates, users
     RESTART IDENTITY;
