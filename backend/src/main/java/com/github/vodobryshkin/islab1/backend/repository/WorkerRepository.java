@@ -32,6 +32,23 @@ public class WorkerRepository {
     }
 
     /**
+     * Проверяет наличие другого действующего директора, включая изменения текущей транзакции.
+     */
+    public boolean hasOtherHiredDirector(long organizationId, Integer excludedWorkerId) {
+        String excluded = excludedWorkerId == null ? "" : " AND w.id <> :excludedId";
+        var query = entityManager.createQuery("SELECT COUNT(w) FROM Worker w"
+                        + " WHERE w.organization.id = :organizationId"
+                        + " AND w.position = :position AND w.status = :status" + excluded, Long.class)
+                .setParameter("organizationId", organizationId)
+                .setParameter("position", Position.DIRECTOR)
+                .setParameter("status", Status.HIRED);
+        if (excludedWorkerId != null) {
+            query.setParameter("excludedId", excludedWorkerId);
+        }
+        return query.getSingleResult() > 0;
+    }
+
+    /**
      * Возвращает страницу работников с фильтрами по подстроке.
      *
      * @param query параметры страницы

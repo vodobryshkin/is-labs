@@ -28,6 +28,7 @@ public class OrganizationService {
     private final LocationRepository locationRepository;
     private final WorkerRepository workerRepository;
     private final EventSessions events;
+    private final DomainRules rules;
 
     /**
      * Создаёт сервис.
@@ -37,16 +38,18 @@ public class OrganizationService {
      * @param locationRepository хранилище локаций
      * @param workerRepository хранилище работников
      * @param events уведомление об изменениях после фиксации транзакции
+     * @param rules новые доменные правила и блокировка записи
      */
     @Inject
     public OrganizationService(OrganizationRepository repository,
             AddressRepository addressRepository, LocationRepository locationRepository,
-            WorkerRepository workerRepository, EventSessions events) {
+            WorkerRepository workerRepository, EventSessions events, DomainRules rules) {
         this.repository = repository;
         this.addressRepository = addressRepository;
         this.locationRepository = locationRepository;
         this.workerRepository = workerRepository;
         this.events = events;
+        this.rules = rules;
     }
 
     /**
@@ -58,6 +61,7 @@ public class OrganizationService {
         this.locationRepository = null;
         this.workerRepository = null;
         this.events = null;
+        this.rules = null;
     }
 
     /**
@@ -68,6 +72,7 @@ public class OrganizationService {
      */
     @Transactional
     public Change create(Organization organization) {
+        rules.beginWrite();
         Optional<Change> refusal = refusal(organization);
 
         if (refusal.isPresent()) {
@@ -124,6 +129,7 @@ public class OrganizationService {
      */
     @Transactional
     public Change update(long id, Organization values) {
+        rules.beginWrite();
         Optional<Organization> organization = repository.findById(id);
 
         if (organization.isEmpty()) {
@@ -136,9 +142,7 @@ public class OrganizationService {
             return missing.get();
         }
 
-        boolean nameTaken = repository.findByFullName(values.getFullName())
-                .filter(other -> other.getId() != id)
-                .isPresent();
+        boolean nameTaken = rules.organizationNameTaken(values.getFullName(), id);
 
         if (nameTaken) {
             return new Change(Outcome.CONFLICT, null, null, null);
@@ -167,6 +171,7 @@ public class OrganizationService {
      */
     @Transactional
     public Change indexSalaries(long organizationId, double coefficient) {
+        rules.beginWrite();
         if (repository.findById(organizationId).isEmpty()) {
             return new Change(Outcome.NOT_FOUND, null, null, null);
         }
@@ -199,6 +204,7 @@ public class OrganizationService {
      */
     @Transactional
     public Outcome delete(long id) {
+        rules.beginWrite();
         Optional<Organization> organization = repository.findById(id);
 
         if (organization.isEmpty()) {
@@ -229,7 +235,7 @@ public class OrganizationService {
             return missing;
         }
 
-        return repository.findByFullName(organization.getFullName()).isPresent()
+        return rules.organizationNameTaken(organization.getFullName(), null)
                 ? Optional.of(new Change(Outcome.CONFLICT, null, "organization", null))
                 : Optional.empty();
     }

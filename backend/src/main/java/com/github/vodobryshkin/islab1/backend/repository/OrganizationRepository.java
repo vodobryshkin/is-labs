@@ -45,6 +45,14 @@ public class OrganizationRepository {
     }
 
     /**
+     * Скалярная проекция для проверки названий в Java, без загрузки графа адресов.
+     */
+    public List<Object[]> findNames() {
+        return entityManager.createQuery(
+                "SELECT o.id, o.fullName FROM Organization o", Object[].class).getResultList();
+    }
+
+    /**
      * Возвращает страницу организаций с фильтрами по подстроке.
      *
      * @param query параметры страницы

@@ -18,7 +18,7 @@ const messages: Record<string, string> = {
     'Запрос содержит некорректные данные.',
   'The request body must be a JSON object.': 'Запрос содержит некорректные данные.',
   'Another organization with this full_name already exists.':
-    'Организация с таким полным названием уже существует.',
+    'Организация с таким названием уже существует: регистр, лишние пробелы и кавычки не учитываются.',
   'The coordinates cannot be deleted while workers reference them.':
     'Координаты нельзя удалить: их используют работники.',
   'The location cannot be deleted while addresses or persons reference it.':
@@ -56,6 +56,10 @@ function translateMessage(message: string): string | undefined {
   const assigned = message.match(/^Person with id=(\d+) is already assigned to another worker\.$/)
   if (assigned) {
     return `Персона с ID ${assigned[1]} уже привязана к другому работнику.`
+  }
+  const director = message.match(/^Organization with id=(\d+) already has a hired director\.$/)
+  if (director) {
+    return `В организации с ID ${director[1]} уже есть действующий директор.`
   }
   return messages[message]
 }

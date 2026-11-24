@@ -32,11 +32,18 @@ public class WorkerOperationExceptionMapper implements ExceptionMapper<WorkerOpe
             case REFERENCE_NOT_FOUND -> missing(exception.getSubject(), exception.getSubjectId());
             case IN_USE -> "Worker with id=" + exception.getSubjectId()
                     + " is referenced by a person and cannot be deleted.";
-            case CONFLICT -> "person".equals(exception.getSubject())
-                    ? "Person with id=" + exception.getSubjectId()
-                            + " is already assigned to another worker."
-                    : "Another organization with this full_name already exists.";
+            case CONFLICT -> conflict(exception);
             default -> throw new IllegalArgumentException("Expected a worker operation failure.");
+        };
+    }
+
+    private String conflict(WorkerOperationException exception) {
+        return switch (String.valueOf(exception.getSubject())) {
+            case "director" -> "Organization with id=" + exception.getSubjectId()
+                    + " already has a hired director.";
+            case "person" -> "Person with id=" + exception.getSubjectId()
+                    + " is already assigned to another worker.";
+            default -> "Another organization with this full_name already exists.";
         };
     }
 

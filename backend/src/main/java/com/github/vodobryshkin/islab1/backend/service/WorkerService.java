@@ -34,6 +34,7 @@ public class WorkerService {
     private final LocationRepository locationRepository;
     private final OrganizationService organizationService;
     private final EventSessions events;
+    private final DomainRules rules;
 
     /**
      * Создаёт сервис.
@@ -45,12 +46,13 @@ public class WorkerService {
      * @param locationRepository хранилище локаций
      * @param organizationService поиск, проверка и создание организации
      * @param events уведомление об изменениях после фиксации транзакции
+     * @param rules новые доменные правила и блокировка записи
      */
     @Inject
     public WorkerService(WorkerRepository repository, UserRepository userRepository,
             CoordinatesRepository coordinatesRepository, PersonRepository personRepository,
             LocationRepository locationRepository, OrganizationService organizationService,
-            EventSessions events) {
+            EventSessions events, DomainRules rules) {
         this.repository = repository;
         this.userRepository = userRepository;
         this.coordinatesRepository = coordinatesRepository;
@@ -58,13 +60,14 @@ public class WorkerService {
         this.locationRepository = locationRepository;
         this.organizationService = organizationService;
         this.events = events;
+        this.rules = rules;
     }
 
     /**
      * Нужен CDI для создания клиентского прокси, прикладной код его не вызывает.
      */
     protected WorkerService() {
-        this(null, null, null, null, null, null, null);
+        this(null, null, null, null, null, null, null, null);
     }
 
     /**
@@ -78,6 +81,7 @@ public class WorkerService {
      */
     @Transactional
     public Change create(Worker worker, String username) {
+        rules.beginWrite();
         Optional<Change> refusal = refusal(worker, null);
 
         if (refusal.isPresent()) {
@@ -107,6 +111,7 @@ public class WorkerService {
      */
     @Transactional
     public Change update(int id, Worker values) {
+        rules.beginWrite();
         Optional<Worker> found = repository.findById(id);
 
         if (found.isEmpty()) {
@@ -152,6 +157,7 @@ public class WorkerService {
      */
     @Transactional
     public Outcome delete(int id) {
+        rules.beginWrite();
         Optional<Worker> worker = repository.findById(id);
 
         if (worker.isEmpty()) {
@@ -180,6 +186,7 @@ public class WorkerService {
      */
     @Transactional
     public Outcome hire(int workerId, long organizationId) {
+        rules.beginWrite();
         Optional<Worker> worker = repository.findById(workerId);
 
         if (worker.isEmpty()) {
@@ -194,6 +201,9 @@ public class WorkerService {
         }
 
         Worker target = worker.get();
+        if (rules.directorTaken(organization, target.getPosition(), Status.HIRED, workerId)) {
+            throw new WorkerOperationException(directorConflict(organization));
+        }
 
         if (target.getStatus() != Status.HIRED || target.getOrganization() == null
                 || !target.getOrganization().getId().equals(organizationId)) {
@@ -290,9 +300,14 @@ public class WorkerService {
 
         Optional<Change> organization = organizationRefusal(worker.getOrganization());
 
-        return organization.isPresent()
-                ? organization
-                : personRefusal(worker.getPerson(), owner);
+        if (organization.isPresent()) {
+            return organization;
+        }
+        if (rules.directorTaken(worker.getOrganization(), worker.getPosition(),
+                worker.getStatus(), owner)) {
+            return Optional.of(directorConflict(worker.getOrganization()));
+        }
+        return personRefusal(worker.getPerson(), owner);
     }
 
     private Optional<Change> organizationRefusal(Organization organization) {
@@ -337,6 +352,10 @@ public class WorkerService {
         return holder == null || holder.getId().equals(owner)
                 ? Optional.empty()
                 : Optional.of(new Change(Outcome.CONFLICT, null, "person", person.getId()));
+    }
+
+    private Change directorConflict(Organization organization) {
+        return new Change(Outcome.CONFLICT, null, "director", organization.getId());
     }
 
     private Change missing(String subject, long id) {
