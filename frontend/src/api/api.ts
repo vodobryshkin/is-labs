@@ -158,6 +158,22 @@ export interface WorkerRequest {
   organization?: OrganizationRequest
 }
 
+export interface ImportResult {
+  operation_id: number
+  status: 'SUCCESS' | 'FAILED'
+  added_count: number | null
+  record: number | null
+  message?: string
+  errors?: { field: string; message: string }[]
+}
+
+export interface ImportOperation {
+  id: number
+  status: 'IN_PROGRESS' | 'SUCCESS' | 'FAILED'
+  username: string
+  added_count: number | null
+}
+
 interface CsrfTokenResponse {
   csrf_token: string
 }
@@ -225,8 +241,21 @@ const baseQuery: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQueryError> =
 
 export const api = createApi({
   baseQuery,
-  tagTypes: ['Session', ...dataTags],
+  tagTypes: ['Session', 'Import', ...dataTags],
   endpoints: (build) => ({
+    listImports: build.query<Page<ImportOperation>, ListParams & { viewer: number }>({
+      query: (params) => ({ url: '/imports', params: {
+        page: params.page, page_size: params.page_size, sort_order: 'desc',
+      } }),
+      providesTags: ['Import'],
+    }),
+    importWorkers: build.mutation<ImportResult, File>({
+      query: (file) => ({
+        url: '/imports', params: { format: 'json' }, method: 'POST',
+        headers: { 'Content-Type': 'application/octet-stream' }, body: file,
+      }),
+      invalidatesTags: ['Import', ...dataTags],
+    }),
     getSession: build.query<CurrentUser, void>({
       query: () => '/auth/session',
       providesTags: ['Session'],
@@ -375,6 +404,8 @@ export const api = createApi({
 })
 
 export const {
+  useListImportsQuery,
+  useImportWorkersMutation,
   useGetSessionQuery,
   useRegisterMutation,
   useLoginMutation,

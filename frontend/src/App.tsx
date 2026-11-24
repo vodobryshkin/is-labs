@@ -11,6 +11,7 @@ import OrganizationsPage from './pages/OrganizationsPage'
 import PersonsPage from './pages/PersonsPage'
 import SpecialPage from './pages/SpecialPage'
 import WorkersPage from './pages/WorkersPage'
+import ImportsPage from './pages/ImportsPage'
 
 function App() {
   const session = useGetSessionQuery()
@@ -36,6 +37,7 @@ function App() {
     { hash: '#locations', title: 'Локации', content: <LocationsPage /> },
     { hash: '#addresses', title: 'Адреса', content: <AddressesPage /> },
     { hash: '#persons', title: 'Персоны', content: <PersonsPage /> },
+    { hash: '#imports', title: 'Импорт', content: <ImportsPage key={session.data?.id} userId={session.data?.id ?? 0} /> },
     { hash: '#special', title: 'Специальные операции', content: <SpecialPage /> },
   ]
   const currentPage = pages.find((page) => page.hash === hash) ?? pages[0]
@@ -57,9 +59,9 @@ function App() {
       if (message.type === 'AUTHENTICATED') {
         setEventsMessage('')
         setSessionEnded(false)
-        dispatch(api.util.invalidateTags([...dataTags]))
+        dispatch(api.util.invalidateTags([...dataTags, 'Import']))
       } else if (message.type === 'DATA_CHANGED') {
-        dispatch(api.util.invalidateTags([...dataTags]))
+        dispatch(api.util.invalidateTags([...dataTags, 'Import']))
       } else if (message.type === 'ERROR' && message.code === 'SESSION_ENDED') {
         closedByUs = true
         socket.close()
