@@ -55,11 +55,7 @@ public class ImportResource {
                 .cacheControl(cache).build();
     }
 
-    /**
-     * Файл передаётся непосредственно в теле запроса; формат выбирает реализацию парсера.
-     */
     @POST
-    @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_OCTET_STREAM})
     public Response upload(InputStream input, @QueryParam("format") @DefaultValue("json") String format,
             @Context HttpServletRequest request) {
         ImportReport report = imports.importFile(input, format, request.getUserPrincipal().getName());

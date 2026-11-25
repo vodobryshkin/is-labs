@@ -249,13 +249,16 @@ export const api = createApi({
       } }),
       providesTags: ['Import'],
     }),
-    importWorkers: build.mutation<ImportResult, { file: File; format: string }>({
-        query: ({ file, format }) => ({
-        url: '/imports', params: { format }, method: 'POST',
-        headers: { 'Content-Type': 'application/octet-stream' }, body: file,
-        }),
-        invalidatesTags: ['Import', ...dataTags],
-    }),
+      importWorkers: build.mutation<ImportResult, { file: File; format: string }>({
+          query: ({ file, format }) => ({
+              url: '/imports',
+              params: { format },
+              method: 'POST',
+              headers: { 'Content-Type': 'application/octet-stream' },
+              body: file,
+          }),
+          invalidatesTags: ['Import', ...dataTags],
+      }),
     getSession: build.query<CurrentUser, void>({
       query: () => '/auth/session',
       providesTags: ['Session'],
