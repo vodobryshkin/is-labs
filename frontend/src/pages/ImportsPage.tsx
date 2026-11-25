@@ -2,15 +2,10 @@ import { useRef, useState } from 'react'
 import type { FormEvent } from 'react'
 import { useImportWorkersMutation, useListImportsQuery } from '../api/api'
 import type { ImportResult } from '../api/api'
-import { errorText, fieldLabel } from '../api/errors'
+import { errorText, fieldLabel, issueText, messageText } from '../api/errors'
 import Pager from '../components/Pager'
 
 const titles = { IN_PROGRESS: 'Выполняется', SUCCESS: 'Завершён', FAILED: 'Ошибка' }
-
-const descriptions: Record<string, string> = {
-    json: 'JSON-массив работников. Вложенные объекты — целиком, без ссылок по ID.',
-    csv: 'CSV с заголовком. Вложенные объекты — через колонки с префиксами (coordinates_x, person_hair_color, organization_full_name и т.д.).',
-}
 
 const accepts: Record<string, string> = {
     json: '.json,application/json',
@@ -51,7 +46,6 @@ function ImportsPage({ userId }: { userId: number }) {
     return (
         <>
             <h2>Импорт работников</h2>
-            <p>{descriptions[format]} При ошибке весь файл откатывается. Максимум 10 MiB и 10000 записей.</p>
             <form onSubmit={submit}>
                 <fieldset>
                     <legend>Формат</legend>
@@ -88,9 +82,9 @@ function ImportsPage({ userId }: { userId: number }) {
                 <div role="alert">
                     <p>Импорт №{result.operation_id} отклонён.
                         {result.record != null && ` Запись №${result.record}.`} Объекты из файла не добавлены.</p>
-                    <p>{result.message}</p>
+                    <p>{messageText(result.message)}</p>
                     {!!result.errors?.length && <ul>{result.errors.map((issue, i) => (
-                        <li key={i}>{fieldLabel(issue.field)}: {issue.message}</li>
+                        <li key={i}>{fieldLabel(issue.field)}: {issueText(issue)}</li>
                     ))}</ul>}
                 </div>
             )}

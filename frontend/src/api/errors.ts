@@ -159,3 +159,59 @@ export function validationIssues(error: RequestError): ValidationIssue[] {
 export function isUnauthorized(error: RequestError): boolean {
   return !!error && 'status' in error && error.status === 401
 }
+
+const importMessages: Record<string, string> = {
+  'The file must contain at least one worker.': 'В файле нет ни одной записи для импорта.',
+  'The file must not contain more than 10000 records.': 'В файле больше 10000 записей: уменьшите файл.',
+  'The import file must not exceed 10 MiB.': 'Файл импорта не должен превышать 10 MiB.',
+  'The import file is empty.': 'Файл импорта пуст.',
+  'The import file could not be read.': 'Не удалось прочитать файл импорта.',
+  'The CSV file could not be read.': 'Не удалось прочитать CSV-файл: проверьте формат и кодировку.',
+  'The import record contains invalid fields.': 'Запись содержит некорректные поля.',
+  'An import record must not be null.': 'Одна из записей импорта пустая.',
+  'Failed to save the import. No objects were added.': 'Не удалось сохранить данные. Объекты из файла не добавлены.',
+  'must be greater than 0': 'значение должно быть больше нуля',
+  'must not be null': 'обязательное поле',
+  'must not be empty': 'не может быть пустой строкой',
+}
+
+const issueCodes: Record<string, string> = {
+  MUST_NOT_BE_NULL: 'обязательное поле',
+  MUST_NOT_BE_EMPTY: 'не может быть пустой строкой',
+  MUST_BE_POSITIVE: 'значение должно быть больше нуля',
+  MUST_MATCH_PATTERN: 'значение содержит недопустимые символы',
+  INVALID_COMBINATION: 'недопустимое сочетание полей',
+  OUT_OF_RANGE: 'значение вне допустимого диапазона',
+  REFERENCE_NOT_ALLOWED: 'ссылки по ID запрещены: укажите вложенный объект целиком',
+}
+
+export function messageText(message?: string): string {
+  if (!message) {
+    return ''
+  }
+  const unsupported = message.match(/^Unsupported import format: (.+)\.$/)
+  if (unsupported) {
+    return `Неподдерживаемый формат импорта: ${unsupported[1]}.`
+  }
+  const csvRow = message.match(/^Failed to parse CSV row (\d+)\.$/)
+  if (csvRow) {
+    return `Не удалось разобрать строку CSV №${csvRow[1]}: проверьте значения колонок.`
+  }
+  const missing = message.match(/^(\w+) with id=(\d+) does not exist\.$/)
+  if (missing) {
+    const subjects: Record<string, string> = {
+      Organization: 'Организация',
+      Person: 'Персона',
+      Worker: 'Работник',
+      Coordinates: 'Координаты',
+      Address: 'Адрес',
+      Location: 'Локация',
+    }
+    return `${subjects[missing[1]] ?? missing[1]} с ID ${missing[2]} не существует.`
+  }
+  return importMessages[message] ?? translateMessage(message) ?? message
+}
+
+export function issueText(issue: { code?: string; message: string }): string {
+  return (issue.code && issueCodes[issue.code]) ?? messageText(issue.message)
+}

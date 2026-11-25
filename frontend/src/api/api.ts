@@ -159,12 +159,12 @@ export interface WorkerRequest {
 }
 
 export interface ImportResult {
-  operation_id: number
-  status: 'SUCCESS' | 'FAILED'
-  added_count: number | null
-  record: number | null
-  message?: string
-  errors?: { field: string; message: string }[]
+    operation_id: number
+    status: 'SUCCESS' | 'FAILED'
+    added_count: number | null
+    record: number | null
+    message?: string
+    errors?: { field: string; code?: string; message: string }[]
 }
 
 export interface ImportOperation {
