@@ -1,0 +1,90 @@
+[
+  {
+    "name": "Worker1",
+    "coordinates": { "x": 10, "y": 20 },
+    "salary": 85000.5,
+    "rating": 8,
+    "start_date": "2024-01-15T09:00:00Z",
+    "position": "LEAD_DEVELOPER",
+    "status": "HIRED",
+    "person": {
+      "eye_color": "BLUE",
+      "hair_color": "BROWN",
+      "location": { "x": 1, "y": 2, "z": 3 },
+      "birthday": "1990-05-20T00:00:00Z",
+      "weight": 75.5,
+      "nationality": "RUSSIA"
+    },
+    "organization": {
+      "full_name": "ООО ТехноСофт",
+      "annual_turnover": 50000000.0,
+      "employees_count": 150,
+      "rating": 9,
+      "type": "PRIVATE_LIMITED_COMPANY",
+      "official_address": {
+        "street": "ул. Ленина 10",
+        "town": { "x": 55, "y": 37, "z": 0 }
+      },
+      "postal_address": {
+        "street": "ул. Пушкина 5",
+        "town": { "x": 55, "y": 37, "z": 0 }
+      }
+    }
+  },
+  {
+    "name": "Worker2",
+    "coordinates": { "x": -100, "y": 200 },
+    "salary": 120000.0,
+    "rating": 10,
+    "start_date": "2023-06-01T10:30:00Z",
+    "position": "HEAD_OF_DIVISION",
+    "status": "RECOMMENDED_FOR_PROMOTION",
+    "organization": {
+      "full_name": "АО ГлобалТех",
+      "annual_turnover": 100000000.0,
+      "employees_count": 500,
+      "rating": 10,
+      "type": "OPEN_JOINT_STOCK_COMPANY",
+      "official_address": {
+        "street": "Невский проспект 25",
+        "town": { "x": 59, "y": 30, "z": 0 }
+      },
+      "postal_address": {
+        "street": "Невский проспект 25",
+        "town": { "x": 59, "y": 30, "z": 0 }
+      }
+    }
+  },
+  {
+    "name": "Worker3",
+    "coordinates": { "x": 500, "y": -300 },
+    "salary": 65000.0,
+    "rating": 7,
+    "start_date": "2025-03-10T08:00:00Z",
+    "position": "DIRECTOR",
+    "status": "HIRED",
+    "person": {
+      "eye_color": "BLACK",
+      "hair_color": "BLACK",
+      "location": { "x": 10, "y": 20, "z": 30 },
+      "birthday": "1985-12-01T00:00:00Z",
+      "weight": 80.0,
+      "nationality": "ITALY"
+    },
+    "organization": {
+      "full_name": "ИП Козлов",
+      "annual_turnover": 5000000.0,
+      "employees_count": 5,
+      "rating": 6,
+      "type": "PRIVATE_LIMITED_COMPANY",
+      "official_address": {
+        "street": "ул. Советская 1",
+        "town": { "x": 56, "y": 49, "z": 0 }
+      },
+      "postal_address": {
+        "street": "ул. Советская 1",
+        "town": { "x": 56, "y": 49, "z": 0 }
+      }
+    }
+  }
+]

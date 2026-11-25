@@ -1,0 +1,41 @@
+[
+  {
+    "name": "Valid",
+    "coordinates": { "x": 10, "y": 20 },
+    "salary": 50000.0,
+    "rating": 5,
+    "start_date": "2025-01-01T09:00:00Z",
+    "position": "LEAD_DEVELOPER",
+    "status": "HIRED",
+    "person": {
+      "eye_color": "BLUE",
+      "hair_color": "BROWN",
+      "location": { "x": 1, "y": 2, "z": 3 },
+      "birthday": "1990-05-20T00:00:00Z",
+      "weight": 75.5,
+      "nationality": "RUSSIA"
+    },
+    "organization": {
+      "full_name": "ООО Тестовая",
+      "annual_turnover": 1000000.0,
+      "employees_count": 10,
+      "rating": 5,
+      "type": "PRIVATE_LIMITED_COMPANY",
+      "official_address": {
+        "street": "ул. Тестовая 1",
+        "town": { "x": 55, "y": 37, "z": 0 }
+      },
+      "postal_address": {
+        "street": "ул. Тестовая 1",
+        "town": { "x": 55, "y": 37, "z": 0 }
+      }
+    }
+  },
+  {
+    "name": "Invalid",
+    "coordinates": { "x": 30, "y": 40 },
+    "salary": -1000.0,
+    "rating": 8,
+    "start_date": "2025-02-01T09:00:00Z"
+  }
+]
