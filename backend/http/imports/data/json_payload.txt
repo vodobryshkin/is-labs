@@ -1,0 +1,17 @@
+[
+  {
+    "name": "Wrong Ext Txt",
+    "coordinates": { "x": 1, "y": 1 },
+    "salary": 100.0,
+    "rating": 1,
+    "start_date": "2026-10-01T09:00:00Z",
+    "organization": {
+      "full_name": "Wrong Ext Txt Org",
+      "annual_turnover": 10.0,
+      "employees_count": 1,
+      "rating": 1,
+      "official_address": { "street": "Official" },
+      "postal_address": { "street": "Postal" }
+    }
+  }
+]

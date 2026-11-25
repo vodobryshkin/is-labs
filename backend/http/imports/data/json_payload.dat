@@ -1,0 +1,17 @@
+[
+  {
+    "name": "Wrong Ext Dat",
+    "coordinates": { "x": 3, "y": 3 },
+    "salary": 300.0,
+    "rating": 3,
+    "start_date": "2026-10-01T09:00:00Z",
+    "organization": {
+      "full_name": "Wrong Ext Dat Org",
+      "annual_turnover": 30.0,
+      "employees_count": 3,
+      "rating": 3,
+      "official_address": { "street": "Official" },
+      "postal_address": { "street": "Postal" }
+    }
+  }
+]
