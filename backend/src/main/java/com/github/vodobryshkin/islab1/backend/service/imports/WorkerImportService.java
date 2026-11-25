@@ -48,7 +48,6 @@ public class WorkerImportService {
             transaction.importWorkers(operationId, records, username);
             return new ImportReport(operationId, records.size(), null);
         } catch (Exception exception) {
-            // JTA может выбросить checked RollbackException из CDI-перехватчика при commit.
             ImportFailure failure = failure(exception);
             history.fail(operationId);
             return new ImportReport(operationId, null, failure);

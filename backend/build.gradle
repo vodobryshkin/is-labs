@@ -66,7 +66,6 @@ pmd {
     ruleSets = []
 }
 
-// Покрытие объединяет JUnit (test.exec) и прогон Hurl на сервере с агентом (hurl.exec).
 def coverageData = fileTree(layout.buildDirectory.dir('jacoco')).include('*.exec')
 
 jacocoTestReport {
@@ -126,6 +125,7 @@ dependencies {
     testImplementation "org.eclipse:yasson:${yassonVersion}"
     testImplementation "org.eclipse.parsson:parsson:${parssonVersion}"
     testImplementation 'org.jetbrains.kotlin:kotlin-test'
+    implementation 'org.apache.commons:commons-csv:1.10.0'
 }
 
 test {

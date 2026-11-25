@@ -11,7 +11,7 @@ import jakarta.inject.Inject;
 import java.util.Objects;
 
 /**
- * Новые ограничения уникальности реализованы в Java, без уникальных индексов и триггеров.
+ * Новые ограничения уникальности.
  */
 @ApplicationScoped
 public class DomainRules {
