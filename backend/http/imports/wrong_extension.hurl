@@ -28,7 +28,7 @@ POST {{base_url}}/imports?format=json
 X-CSRF-Token: {{csrf}}
 Content-Type: application/octet-stream
 file, data/json_payload.txt;
-HTTP 200
+HTTP 201
 [Asserts]
 jsonpath "$.status" == "SUCCESS"
 jsonpath "$.added_count" == 1
@@ -37,7 +37,7 @@ POST {{base_url}}/imports?format=csv
 X-CSRF-Token: {{csrf}}
 Content-Type: application/octet-stream
 file, data/csv_payload.json;
-HTTP 200
+HTTP 201
 [Asserts]
 jsonpath "$.status" == "SUCCESS"
 jsonpath "$.added_count" == 1
@@ -51,27 +51,24 @@ POST {{base_url}}/imports?format=json
 X-CSRF-Token: {{csrf}}
 Content-Type: application/octet-stream
 file, data/csv_payload.json;
+HTTP 400
 [Asserts]
-status >= 400
-status < 500
 jsonpath "$.status" == "FAILED"
 
 POST {{base_url}}/imports?format=csv
 X-CSRF-Token: {{csrf}}
 Content-Type: application/octet-stream
 file, data/json_payload.txt;
+HTTP 400
 [Asserts]
-status >= 400
-status < 500
 jsonpath "$.status" == "FAILED"
 
 POST {{base_url}}/imports?format=xml
 X-CSRF-Token: {{csrf}}
 Content-Type: application/octet-stream
 file, data/json_payload.txt;
+HTTP 400
 [Asserts]
-status >= 400
-status < 500
 jsonpath "$.status" == "FAILED"
 jsonpath "$.message" contains "Unsupported import format"
 
